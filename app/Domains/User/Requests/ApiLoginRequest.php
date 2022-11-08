@@ -14,11 +14,11 @@ class ApiLoginRequest extends LoginRequest
     /**
      * Issue an access token based on the provided credentials.
      *
-     * @return string
+     * @return array
      *
      * @throws ValidationException
      */
-    public function generateToken(): string
+    public function generateToken(): array
     {
         $this->ensureIsNotRateLimited();
 
@@ -30,6 +30,11 @@ class ApiLoginRequest extends LoginRequest
             ]);
         }
 
-        return $user->createToken(Str::lower($this->input('email')).'|'.$this->ip())->plainTextToken;
+        $user->tokens()->delete();
+
+        return [
+            'token' => $user->createToken(Str::lower($this->input('email')).'|'.$this->ip())->plainTextToken,
+            'username' => $user->name
+        ];
     }
 }

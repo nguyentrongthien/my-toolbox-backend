@@ -25,12 +25,11 @@ class AuthController extends Controller
     {
         try {
 
-            $token = $request->generateToken();
+            $data = $request->generateToken();
 
-            return response()->json(['success' => 'User is now logged in', 'token' => $token]);
+            return response()->json(['success' => 'User is now logged in', ...$data]);
 
         } catch (ValidationException $e) {
-
             return response()->json(['error' => 'Invalid login details'], 401);
 
         }
@@ -44,11 +43,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->validate(['token' => ['required', 'string']]);
-
-        $deleted = DB::table('personal_access_tokens')
-            ->where('token', '=', $request->get('token'))
-            ->delete();
+        $deleted = $request->user()->tokens()->delete();
 
         return $deleted > 0 ? response()->json(['success' => 'User is logged out']) :
             response()->json(['error' => 'Token not found'], 500);
