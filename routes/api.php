@@ -1,5 +1,7 @@
 <?php
 
+use App\Domains\Checklist\Actions\CreateNewChecklistAction;
+use App\Domains\Checklist\Actions\UpdateChecklistAction;
 use App\Domains\User\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +19,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('/v1')->group(function() {
 
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
 
     Route::group(['middleware' => 'auth:sanctum'], function() {
 
@@ -26,7 +28,11 @@ Route::prefix('/v1')->group(function() {
             return $request->user()->only('name');
         });
 
-        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::post('/checklists', CreateNewChecklistAction::class);
+        Route::put('/checklists/{checklist}', UpdateChecklistAction::class);
+
     });
 
 });
