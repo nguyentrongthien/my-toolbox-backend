@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domains\Checklist\Actions\AddItemToChecklistAction;
 use App\Domains\Checklist\Actions\CreateNewChecklistAction;
 use App\Domains\Checklist\Actions\UpdateChecklistAction;
 use App\Models\User;
@@ -15,6 +16,7 @@ class ChecklistTest extends TestCase
 
     private User $user1, $user2;
     private string $checklist_name = 'Test List';
+    private string $item_title = 'Test Item';
 
     protected function setUp(): void
     {
@@ -140,5 +142,123 @@ class ChecklistTest extends TestCase
             'id' => $checklist->id,
             'name' => $checklist_name_changed,
         ]);
+    }
+
+    public function test_checklist_item_can_be_added(): void
+    {
+        $test_item_title = 'Test Item 1';
+        $checklist = CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $this->assertDatabaseHas('checklists', [
+            'id' => $checklist->id,
+            'name' => $this->checklist_name,
+        ]);
+
+        $updated_checklist = AddItemToChecklistAction::run($checklist, $test_item_title);
+
+        $this->assertDatabaseHas('checklist_items', [
+            'checklist_id' => $checklist->id,
+            'title' => $test_item_title,
+        ]);
+
+        $this->assertEquals(1, $updated_checklist->items()->count());
+    }
+
+    public function test_checklist_item_can_be_added_by_owner(): void
+    {
+        $checklist = CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $response = $this->actingAs($this->user1)
+            ->post("/api/v1/checklists/{$checklist->id}/items", ['title' => $this->item_title], ['Accept' => 'application/json']);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('checklists', [
+            'id' => $checklist->id,
+            'name' => $this->checklist_name,
+        ]);
+
+        $this->assertDatabaseHas('checklist_items', [
+            'checklist_id' => $checklist->id,
+            'title' => $this->item_title,
+        ]);
+
+        $response->assertJsonCount(1, 'checklist.items');
+
+        $this->assertEquals($this->item_title, $response->json('checklist.items.0.title'));
+    }
+
+    public function test_checklist_item_can_be_updated_by_owner(): void
+    {
+        $checklist = CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $response1 = $this->actingAs($this->user1)
+            ->post("/api/v1/checklists/{$checklist->id}/items", ['title' => $this->item_title], ['Accept' => 'application/json']);
+
+        $response1->assertOk();
+
+        $response2 = $this->actingAs($this->user1)
+            ->put("/api/v1/checklists/{$checklist->id}/items/{$response1->json('checklist.items.0.id')}",
+                ['title' => 'New Test Title'],
+                ['Accept' => 'application/json']);
+
+        $response2->assertOk();
+
+        $response2->assertJsonCount(1, 'checklist.items');
+
+        $this->assertEquals('New Test Title', $response2->json('checklist.items.0.title'));
+
+        $this->assertDatabaseHas('checklist_items', [
+            'checklist_id' => $checklist->id,
+            'title' => 'New Test Title',
+        ]);
+    }
+
+    public function test_checklist_item_can_be_deleted_by_owner(): void
+    {
+        $checklist = CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $response1 = $this->actingAs($this->user1)
+            ->post("/api/v1/checklists/{$checklist->id}/items", ['title' => $this->item_title], ['Accept' => 'application/json']);
+
+        $response1->assertOk();
+
+        $this->assertDatabaseCount('checklists', 1);
+
+        $this->assertDatabaseCount('checklist_items', 1);
+
+        $response2 = $this->actingAs($this->user1)
+            ->delete("/api/v1/checklists/{$checklist->id}/items/{$response1->json('checklist.items.0.id')}");
+
+        $response2->assertOk();
+
+        $this->assertDatabaseCount('checklists', 1);
+
+        $this->assertDatabaseCount('checklist_items', 0);
+    }
+
+    public function test_checklist_can_be_deleted_by_owner(): void
+    {
+        $checklist = CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $response1 = $this->actingAs($this->user1)
+            ->post("/api/v1/checklists/{$checklist->id}/items", ['title' => $this->item_title], ['Accept' => 'application/json']);
+
+        $response1->assertOk();
+
+        $this->assertDatabaseCount('checklists', 1);
+
+        $this->assertDatabaseCount('checklist_items', 1);
+
+        $response2 = $this->actingAs($this->user1)
+            ->delete("/api/v1/checklists/{$checklist->id}");
+
+        $response2->assertOk();
+
+        $this->assertDatabaseCount('checklists', 0);
+
+        $this->assertDatabaseCount('checklist_items', 0);
+
+        $this->assertEquals($checklist->id, $response2->json('checklist_id'));
     }
 }

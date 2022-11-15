@@ -1,7 +1,11 @@
 <?php
 
+use App\Domains\Checklist\Actions\AddItemToChecklistAction;
 use App\Domains\Checklist\Actions\CreateNewChecklistAction;
+use App\Domains\Checklist\Actions\DeleteChecklistAction;
+use App\Domains\Checklist\Actions\DeleteChecklistItemAction;
 use App\Domains\Checklist\Actions\UpdateChecklistAction;
+use App\Domains\Checklist\Actions\UpdateChecklistItemAction;
 use App\Domains\User\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +36,10 @@ Route::prefix('/v1')->group(function() {
 
         Route::post('/checklists', CreateNewChecklistAction::class);
         Route::put('/checklists/{checklist}', UpdateChecklistAction::class);
+        Route::delete('/checklists/{checklist}', DeleteChecklistAction::class);
+        Route::post('/checklists/{checklist}/items', AddItemToChecklistAction::class);
+        Route::put('/checklists/{checklist}/items/{item}', UpdateChecklistItemAction::class);
+        Route::delete('/checklists/{checklist}/items/{item}', DeleteChecklistItemAction::class);
 
     });
 

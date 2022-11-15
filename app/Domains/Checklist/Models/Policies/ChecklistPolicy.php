@@ -19,4 +19,16 @@ class ChecklistPolicy
         return $user->id === $checklist->user_id;
     }
 
+    /**
+     * Determine if the given checklist can be deleted by the user.
+     *
+     * @param User $user
+     * @param Checklist $checklist
+     * @return bool
+     */
+    public function delete(User $user, Checklist $checklist): bool
+    {
+        return $user->id === $checklist->user_id;
+    }
+
 }

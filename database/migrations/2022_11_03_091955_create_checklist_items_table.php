@@ -21,7 +21,8 @@ return new class extends Migration
             $table->boolean('checked')->default(0);
             $table->timestamps();
 
-            $table->foreign('checklist_id')->references('id')->on('checklists');
+            $table->foreign('checklist_id')->references('id')
+                ->on('checklists')->onDelete('cascade');
         });
     }
 
