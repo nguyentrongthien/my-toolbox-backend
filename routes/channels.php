@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Checklist\Models\Checklist;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -16,3 +17,8 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+Broadcast::channel('checklist.{checklist}', function ($user, Checklist $checklist) {
+    \Illuminate\Support\Facades\Log::info('checklist ' . $checklist);
+    return (int) $user->id === (int) $checklist->user_id;
+}, ['middleware' => ['auth:sanctum']]);

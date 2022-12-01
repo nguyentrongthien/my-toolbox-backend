@@ -2,6 +2,7 @@
 
 namespace App\Domains\Checklist\Models;
 
+use App\Domains\Checklist\Traits\ChecklistBroadcastsEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Checklist extends Model
 {
+    use ChecklistBroadcastsEvents;
+
     protected $table = 'checklists';
 
     protected $guarded = [];
