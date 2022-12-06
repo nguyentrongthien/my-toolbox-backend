@@ -34,6 +34,7 @@ class ApiLoginRequest extends LoginRequest
 
         return [
             'token' => $user->createToken(Str::lower($this->input('email')).'|'.$this->ip())->plainTextToken,
+            'user_id' => $user->id,
             'username' => $user->name
         ];
     }

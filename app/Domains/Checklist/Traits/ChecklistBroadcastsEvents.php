@@ -18,7 +18,7 @@ trait ChecklistBroadcastsEvents
      */
     public function broadcastOn($event): array
     {
-        return [new PrivateChannel('checklist.' . $this->id)];
+        return [new PrivateChannel('broadcasts.of.user.' . $this->user->id)];
     }
 
     /**
