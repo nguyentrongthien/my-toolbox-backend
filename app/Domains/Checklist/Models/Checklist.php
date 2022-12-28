@@ -16,6 +16,10 @@ class Checklist extends Model
 
     protected $guarded = [];
 
+    protected $with = ['items'];
+
+    protected $hidden = ['user'];
+
     /**
      * Relationship with ChecklistItem
      *

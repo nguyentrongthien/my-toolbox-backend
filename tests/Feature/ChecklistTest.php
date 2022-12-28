@@ -261,4 +261,24 @@ class ChecklistTest extends TestCase
 
         $this->assertEquals($checklist->id, $response2->json('checklist_id'));
     }
+
+    public function test_checklists_can_only_be_retrieved_by_owner(): void
+    {
+        CreateNewChecklistAction::run($this->user1, $this->checklist_name);
+
+        $response1 = $this->actingAs($this->user1)
+            ->get("/api/v1/checklists");
+
+        $response1->assertOk();
+
+        $response1->assertJsonCount(1, 'checklists');
+
+        $response2 = $this->actingAs($this->user2)
+            ->get("/api/v1/checklists");
+
+        $response2->assertOk();
+
+        $response2->assertJsonCount(0, 'checklists');
+
+    }
 }

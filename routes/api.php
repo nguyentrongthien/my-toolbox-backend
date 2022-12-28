@@ -4,6 +4,7 @@ use App\Domains\Checklist\Actions\AddItemToChecklistAction;
 use App\Domains\Checklist\Actions\CreateNewChecklistAction;
 use App\Domains\Checklist\Actions\DeleteChecklistAction;
 use App\Domains\Checklist\Actions\DeleteChecklistItemAction;
+use App\Domains\Checklist\Actions\GetChecklistsAction;
 use App\Domains\Checklist\Actions\UpdateChecklistAction;
 use App\Domains\Checklist\Actions\UpdateChecklistItemAction;
 use App\Domains\User\Controllers\Api\AuthController;
@@ -30,11 +31,12 @@ Route::prefix('/v1')->group(function() {
     Route::group(['middleware' => 'auth:sanctum'], function() {
 
         Route::get('/user', function (Request $request) {
-            return $request->user()->only('name');
+            return $request->user()->only('name', 'id');
         });
 
         Route::post('/logout', [AuthController::class, 'logout']);
 
+        Route::get('/checklists', GetChecklistsAction::class);
         Route::post('/checklists', CreateNewChecklistAction::class);
         Route::put('/checklists/{checklist}', UpdateChecklistAction::class);
         Route::delete('/checklists/{checklist}', DeleteChecklistAction::class);
