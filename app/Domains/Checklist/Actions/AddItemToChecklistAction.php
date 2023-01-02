@@ -28,6 +28,8 @@ class AddItemToChecklistAction
             'checklist_id' => $checklist->id
         ]);
 
+        $checklist->touch();
+
         $checklist->load('items');
 
         return $checklist;

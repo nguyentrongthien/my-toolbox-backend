@@ -25,7 +25,7 @@ class ChecklistItemRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string'],
-            'description' => ['string'],
+            'description' => ['string', 'nullable'],
             'checked' => ['boolean']
         ];
     }

@@ -16,11 +16,19 @@ class DeleteChecklistItemAction
      * Handle the action call.
      *
      * @param ChecklistItem $item
-     * @return void
+     * @return Checklist
      */
-    public function handle(ChecklistItem $item): void
+    public function handle(ChecklistItem $item): Checklist
     {
+        $checklist = $item->checklist;
+
         $item->delete();
+
+        $checklist->touch();
+
+        $checklist->load('items');
+
+        return $checklist;
     }
 
     public function asController(Checklist $checklist, ChecklistItem $item, Request $request): JsonResponse
@@ -28,10 +36,8 @@ class DeleteChecklistItemAction
         if ($request->user()->cannot('update', $checklist) && $checklist->id !== $item->checklist_id)
             abort(403);
 
-        $this->handle($item);
+        $modified_checklist = $this->handle($item);
 
-        $checklist->load('items');
-
-        return response()->json(['checklist' => $checklist]);
+        return response()->json(['checklist' => $modified_checklist]);
     }
 }
