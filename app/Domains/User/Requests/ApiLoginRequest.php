@@ -22,20 +22,34 @@ class ApiLoginRequest extends LoginRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $user = User::where('email', $this->email)->first();
+        $user = User::where('email', $this->get('email'))->first();
 
-        if (! $user || ! Hash::check($this->password, $user->password)) {
+        if (! $user || ! Hash::check($this->get('password'), $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        $user->tokens()->delete();
+        $tokenName = $this->getTokenName();
+
+        $user->tokens()->where('name', '=', $tokenName)->delete();
 
         return [
-            'token' => $user->createToken(Str::lower($this->input('email')).'|'.$this->ip())->plainTextToken,
+            'token' => $user->createToken($tokenName)->plainTextToken,
             'user_id' => $user->id,
             'username' => $user->name
         ];
+    }
+
+    /**
+     * Issue an access token based on the provided credentials.
+     *
+     * @return string
+     */
+    private function getTokenName(): string
+    {
+        return Str::lower($this->input('email')) . '|' .
+            $this->ip() .
+            ($this->has('unique_machine_id') ? '|' . $this->get('unique_machine_id') : '');
     }
 }
