@@ -5,7 +5,6 @@ namespace App\Domains\User\Controllers\Api;
 use App\Domains\User\Requests\ApiLoginRequest;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,7 +42,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $deleted = $request->user()->tokens()->delete();
+        $deleted = $request->user()->tokens()->where('token', '=', $request->user()->currentAccessToken()->token)->delete();
 
         return $deleted > 0 ? response()->json(['success' => 'User is logged out']) :
             response()->json(['error' => 'Token not found'], 500);
